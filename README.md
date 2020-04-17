@@ -1,3 +1,6 @@
+#### PRE-REQUISITE
+Install JRE 8 or greater - https://www.oracle.com/java/technologies/javase-jre8-downloads.html
+
 #### METADATA EXTRACTOR
 Extracting metadata from file names and creating an associated XML file.
 
@@ -19,6 +22,7 @@ Do not rename *XML_Source* folder.
 9. Type "cd Desktop/RunnableSolution" into the command prompt and hit the Enter key
 10. Enter the Prompt Format below into the command prompt, changing fullPathNameToYourFolderFullOfTestFiles
 text to the path to the folder that contains your test files, and hit enter
+11. Enter the Prompt Format below into the command prompt window, changing the fullPathNameToYourFolderFullOfTestFiles text to the path to the folder that contains your test files, and hit enter
 
 ```
 Prompt Format:
