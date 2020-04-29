@@ -35,7 +35,7 @@ public class FileManipulation {
 	String path;
 	Document doc;
 	File folder;
-	String[] values = new String[3];
+	String[] values;
 	String[] allowed_fileTypes =  {".doc",".docx",".pdf"};
 	String[] special_fileTypes = {".xml", ".log"};
 	int count = 0; //count how many files generated
@@ -116,6 +116,14 @@ public class FileManipulation {
 			if ("acn:HCOCaseDate".equals(nodeAttr.getTextContent())) {
 				// System.out.println("I am in");
 				node_.setTextContent(values[2]);
+			}
+			if ("acn:HCOVersion".equals(nodeAttr.getTextContent())) {
+				// System.out.println("I am in");
+				if(values.length == 4) {
+					node_.setTextContent(values[3]);
+				} else {
+					node_.setTextContent("");
+				}
 			}
 			// System.out.println(nodeAttr.getTextContent());
 		}
@@ -240,28 +248,24 @@ public class FileManipulation {
 		 * except for date requirement, the date must be verified	
 		 *	
 		 */
-		state = file_n[0].matches("^[a-zA-Z]{1,2}_[0-9]+_[0-9]{6}");
+		state = file_n[0].matches("^[a-zA-Z]{1,2}_[0-9]+_[0-9]{6}+_?[0-9]*");
 		/* 
 		 * here the string is split into array 
 		 * part[0] => case letters
 		 * part[1] => case number
 		 * part[2] => date
+		 * part[3] => version no
 		 */
 		String[] part = file_n[0].split("_");
-		//for (String part : file_n[0].split("_")) {
+		values = new String[part.length];
+		
 		for(int i = 0; i < part.length; i++){
 			if (state) {
-				//if (part[i].length() < 3 && part[i].matches("^[a-zA-Z]{1,2}")) {
-					// state = part.matches("[A-Za-z]+");
-					//values[i] = part[i];
-				//} else if (part.length() == 4) {
-					// state = part.matches("[0-9]+");
-				//	values[1] = part;
-				//} else if (part[i].length() == 6 && part[i].matches("^[0-9]{6}")) {
+				
 				if (i == 2) {
 					// check date format only
 					try {
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyy");
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
 						date = LocalDate.parse(part[i], formatter);
 						values[i] = date.toString();
 						
@@ -270,7 +274,6 @@ public class FileManipulation {
 						state = false;
 					}
 				} else
-					//state = false;
 					/*
 					 * if case letter or number, just save 
 					 * this variable is used in XML file update
