@@ -294,6 +294,10 @@ public class FileManipulation {
 		 *
 		 */
 		return (dir, name) -> {
+			File fileName = new File(dir + "\\" + name);
+			if(fileName.isDirectory())//if file is folder allow it		
+				return true;
+			
 			if (name.lastIndexOf('.') > 0) {
 				// get last index for '.' char
 				int lastIndex = name.lastIndexOf('.');
@@ -310,8 +314,6 @@ public class FileManipulation {
 				}	
 				
 			}
-			else if(dir.isDirectory())//if file is folder allow it		
-				return true;
 			this.count_incorrect++;
 			wrongFileTypes.add(dir.getPath() + "\\" + name);//if nothing from above, filter it out and add to list
 			return false;

@@ -8,6 +8,7 @@
 	<entry key='cm:author'>author</entry>
 	<entry key='cm:created'>created_date</entry>
 	<entry key='cm:owner'>Administrator</entry>
+	<entry key="acn:RecordType">High Court Order</entry>
 	<entry key='acn:HCOCaseType'>case_type</entry>
 	<entry key='acn:HCOCaseNumber'>case_number</entry>
 	<entry key='acn:HCOCaseDate'>case_date</entry>
