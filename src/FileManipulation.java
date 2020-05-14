@@ -23,9 +23,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -33,7 +35,8 @@ import org.xml.sax.SAXException;
 
 public class FileManipulation {
 	String path;
-	Document doc;
+	DocumentBuilder docBuilder;
+	Node originalRoot;
 	File folder;
 	String[] values;
 	String[] allowed_fileTypes =  {".doc",".docx",".pdf"};
@@ -44,6 +47,8 @@ public class FileManipulation {
 	List<String> rejected = new ArrayList<String>();//wrongly formatted names
 	List <String> wrongFileTypes = new ArrayList<String>();//wrong file types
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	Transformer transformer;
+	
 	
 	public FileManipulation(String path) {
 		/*
@@ -58,7 +63,7 @@ public class FileManipulation {
 			 * LEAVE HOW IT IS
 			 */
 			
-			this.doc = readXML("XML_Source\\generic.metadata.xml");
+			readXML("XML_Source\\generic.metadata.xml");
 			// path to the .doc, .docx, .pdf files
 			this.folder = new File(path);
 			
@@ -68,7 +73,7 @@ public class FileManipulation {
 		}
 	}
 
-	public void startMetadataExtraction() {
+	public void startMetadataExtraction() throws Exception {
 		/*
 		 * This is start function
 		 * It will run only if invoked from Main
@@ -92,7 +97,13 @@ public class FileManipulation {
 		}
 	}
 
-	public void updateXML(Document doc, String main_path, String filename, String createdDate) {
+	public void updateXML(String main_path, String filename, String createdDate) throws Exception {
+		//generate a copy and keep the XML tamplate
+	       
+        Document doc = this.docBuilder.newDocument();
+        Node copiedRoot = doc.importNode(originalRoot, true);
+        doc.appendChild(copiedRoot);
+		
 		// Get the root element
 		// Node properties_ = doc.getFirstChild();
 		NodeList listOfChildNodes = doc.getElementsByTagName("entry");
@@ -106,34 +117,51 @@ public class FileManipulation {
 				node_.setTextContent(createdDate);
 			}
 			if ("acn:HCOCaseType".equals(nodeAttr.getTextContent())) {
-				// System.out.println("I am in");
 				node_.setTextContent(values[0]);
 			}
 			if ("acn:HCOCaseNumber".equals(nodeAttr.getTextContent())) {
-				// System.out.println("I am in");
 				node_.setTextContent(values[1]);
 			}
 			if ("acn:HCOCaseDate".equals(nodeAttr.getTextContent())) {
-				// System.out.println("I am in");
 				node_.setTextContent(values[2]);
-			}
+			}	
 			if ("acn:HCOVersion".equals(nodeAttr.getTextContent())) {
-				// System.out.println("I am in");
-				if(values.length == 4) {
+				if(values.length == 4 && isNumeric(values[3])) {
 					node_.setTextContent(values[3]);
 				} else {
-					node_.setTextContent("");
-				}
+					doc.getElementsByTagName("properties").item(0).removeChild(node_);
+				}	
 			}
-			// System.out.println(nodeAttr.getTextContent());
 		}
 		writeXML(main_path, filename, doc);
+	}
+	
+	public static boolean isNumeric(String str) { 
+		  try {  
+			Integer.parseInt(str);  
+		    return true;
+		  } catch(NumberFormatException e){  
+		    return false;  
+		  }  
+	}
+	
+	private static Element createEntryElement(String key, String element, Document doc) {  
+		// entry content elements
+	  Element entryContent = doc.createElement("entry");
+	  entryContent.appendChild(doc.createTextNode(element));
+	
+	  //set attribute to staff element
+	  Attr attr = doc.createAttribute("key");
+	  attr.setValue(key);
+	  entryContent.setAttributeNode(attr);
+	  
+	  return entryContent;
 	}
 
 	public void writeXML(String path, String filename, Document doc) {
 		// write the content into xml file
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer;
+		
 		try {
 			transformer = transformerFactory.newTransformer();
 			
@@ -160,30 +188,15 @@ public class FileManipulation {
 		//this.count ++; //little number counter that says how many files are generated
 	}
 
-	public Document readXML(String path) throws ParserConfigurationException, SAXException, IOException {
+	public void readXML(String path) throws ParserConfigurationException, SAXException, IOException {
 		// reading xml file - generic script
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		/*this WAS the code i used -- it tries to detect xml template location
-		 * It didn't work properly when xml was part of jar
-		 * so is useless now
-		 */
-		/*ClassLoader classLoader = getClass().getClassLoader();
-		URL resource = classLoader.getResource(path);
-        if (resource == null) {
-            throw new IllegalArgumentException("File is not found!");
-        } else {
-            return new File();
-        	System.out.println("Location of the xml template: " + resource.getPath());
-            Document doc = docBuilder.parse(resource.getFile());
-            return doc;
-        }*/
-		// path to generic xml file
+		this.docBuilder = docFactory.newDocumentBuilder();
 		Document doc = docBuilder.parse(path);
-		return doc;
+        this.originalRoot = doc.getDocumentElement();
 	}
 
-	public void listAllFiles(File folder) throws IOException {
+	public void listAllFiles(File folder) throws Exception {
 		
 		//recursive call through the file tree
 		for (File file_ : folder.listFiles(createFilter(wrongFileTypes))) {
@@ -206,7 +219,7 @@ public class FileManipulation {
 						BasicFileAttributes attr = Files.readAttributes(file_.toPath(), BasicFileAttributes.class);
 						String dateCreated = dateFormat.format(attr.creationTime().toMillis());
 						
-						updateXML(this.doc, folder.getPath(), file_.getName(), dateCreated);
+						updateXML(folder.getPath(), file_.getName(), dateCreated);
 					} else {
 						this.count_correct--;
 						this.count_incorrect++;
@@ -248,7 +261,7 @@ public class FileManipulation {
 		 * except for date requirement, the date must be verified	
 		 *	
 		 */
-		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}+_?[0-9]*");
+		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}+_?[0-9]*[a-zA-Z]*");
 		/* 
 		 * here the string is split into array 
 		 * part[0] => case letters
@@ -261,7 +274,6 @@ public class FileManipulation {
 		
 		for(int i = 0; i < part.length; i++){
 			if (state) {
-				
 				if (i == 2) {
 					// check date format only
 					try {
@@ -279,7 +291,7 @@ public class FileManipulation {
 					 * this variable is used in XML file update
 					 */
 					
-					values[i] = part[i];
+					values[i] = part[i];					
 			}
 		}
 		return state;
