@@ -261,7 +261,7 @@ public class FileManipulation {
 		 * except for date requirement, the date must be verified	
 		 *	
 		 */
-		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}+_?[0-9]*[a-zA-Z]*");
+		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}+_?.*");
 		/* 
 		 * here the string is split into array 
 		 * part[0] => case letters
