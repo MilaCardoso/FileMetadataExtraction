@@ -261,7 +261,7 @@ public class FileManipulation {
 		 * except for date requirement, the date must be verified	
 		 *	
 		 */
-		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}+_?.*");
+		state = file_n[0].matches("^[a-zA-Z]*_[0-9]+_[0-9]{6}.*");
 		/* 
 		 * here the string is split into array 
 		 * part[0] => case letters
@@ -275,6 +275,7 @@ public class FileManipulation {
 		for(int i = 0; i < part.length; i++){
 			if (state) {
 				if (i == 2) {
+					part[i] = part[i].substring(0, 6);
 					// check date format only
 					try {
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
