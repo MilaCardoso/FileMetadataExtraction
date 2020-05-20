@@ -5,6 +5,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -246,7 +248,18 @@ public class FileManipulation {
 		//Files.write(Paths.get(folder.getPath(), "Unsupported_FileType.log"), wrongFileTypes);
 	    writer = new BufferedWriter(new FileWriter(pathLogs +"/OutputLogs/Unsupported_FileType"+ logDate.format(currentTimestamp) + ".log", false));
 	    writer.append(String.join("|\n", wrongFileTypes));   	     
-	    writer.close();
+	    writer.close();	    
+	    moveIncorrectFiles(rejected, pathLogs);
+	    moveIncorrectFiles(wrongFileTypes, pathLogs);
+	}
+	
+	public void moveIncorrectFiles(List<String> listFiles, String pathLogs) throws IOException {
+		new File(pathLogs + "/IncorrectFiles").mkdir();
+		for(String incorrectFile: listFiles) {
+			System.out.println("from: " + incorrectFile);
+			File f = new File(incorrectFile);
+			Files.move(Paths.get(incorrectFile), Paths.get(pathLogs + "/IncorrectFiles/" + f.getName()));
+		} 
 	}
 
 	public boolean VerifyFileName(String file_name) {
