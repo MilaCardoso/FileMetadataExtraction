@@ -3,9 +3,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
@@ -15,7 +13,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,8 +51,8 @@ public class FileManipulation {
 	List <String> wrongFileTypes = new ArrayList<String>();//wrong file types
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	Transformer transformer;
-	
-	
+	Map<String, String> caseTypeList = new HashMap<>();
+	 
 	public FileManipulation(String path) {
 		/*
 		 * This is a constructor
@@ -73,6 +74,46 @@ public class FileManipulation {
 			System.out.println("Invalid path location.");
 			e.printStackTrace();
 		}
+		
+		fillCaseTypeList();
+		
+	}
+	
+	public void fillCaseTypeList(){
+		caseTypeList.put("CA","Circuit Court Appeals");
+		caseTypeList.put("CAB","Originating NOM CAB 1996-2005");
+		caseTypeList.put("CAF","Circuit Appeal Family Law");
+		caseTypeList.put("CAT","CA-Transfer From Circuit");
+		caseTypeList.put("CCA","Circuit Court Appeals Pre 1994");
+		caseTypeList.put("CIR","EC CORP Insolvency Regs");
+		caseTypeList.put("CLA","Common Law Application");
+		caseTypeList.put("COS","Companies Act Matters");
+		caseTypeList.put("CT","Compensation Tribunal");
+		caseTypeList.put("EAP","Euro Account Preservation ORD");
+		caseTypeList.put("EEO","European Enforcement Order");
+		caseTypeList.put("EMO","Maintenance Applications");
+		caseTypeList.put("EXT","Extradition");
+		caseTypeList.put("FJ","Foreign Judgments");
+		caseTypeList.put("FTE","Foreign Tribunal Evidence");
+		caseTypeList.put("HLC","Hague Lux Conv Spec Summons");
+		caseTypeList.put("IA","Intended Action");
+		caseTypeList.put("JR","Judicial Review");
+		caseTypeList.put("JRP","Prisoner Judicial Review APPS");
+		caseTypeList.put("M","Matrimonial Petition");
+		caseTypeList.put("MCA","Miscellaneous Common Law Appl");
+		caseTypeList.put("P","Plenary");
+		caseTypeList.put("PAP","Patents Act Petition");
+		caseTypeList.put("PEP","Parliamentary Election Petition");
+		caseTypeList.put("PIR","PIAB Ruling");
+		caseTypeList.put("R","Revenue");
+		caseTypeList.put("S","Summary");
+		caseTypeList.put("SA","Solicitors Matters");
+		caseTypeList.put("SC","Supreme Court Appeals");
+		caseTypeList.put("Sp","Special");  
+		caseTypeList.put("SS","Stateside");
+		caseTypeList.put("SSP","Prisoner Habeus Corpus Apps");
+		caseTypeList.put("TBA","To be adopted by High Court");
+		caseTypeList.put("VL","Visiting Lawyers");
 	}
 
 	public void startMetadataExtraction() throws Exception {
@@ -256,7 +297,6 @@ public class FileManipulation {
 	public void moveIncorrectFiles(List<String> listFiles, String pathLogs) throws IOException {
 		new File(pathLogs + "/IncorrectFiles").mkdir();
 		for(String incorrectFile: listFiles) {
-			System.out.println("from: " + incorrectFile);
 			File f = new File(incorrectFile);
 			Files.move(Paths.get(incorrectFile), Paths.get(pathLogs + "/IncorrectFiles/" + f.getName()));
 		} 
@@ -287,7 +327,15 @@ public class FileManipulation {
 		
 		for(int i = 0; i < part.length; i++){
 			if (state) {
-				if (i == 2) {
+				if (i == 0) {
+					// compare caseType field with the caseTypeList
+					if (caseTypeList.containsKey(part[i])) {
+						values[i] = caseTypeList.get(part[i]);
+					} else {
+						state = false;
+					}
+						
+				} else if (i == 2) {
 					part[i] = part[i].substring(0, 6);
 					// check date format only
 					try {
