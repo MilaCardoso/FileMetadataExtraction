@@ -330,7 +330,7 @@ public class FileManipulation {
 				if (i == 0) {
 					// compare caseType field with the caseTypeList
 					if (caseTypeList.containsKey(part[i])) {
-						values[i] = caseTypeList.get(part[i]);
+						values[i] = part[i];
 					} else {
 						state = false;
 					}
