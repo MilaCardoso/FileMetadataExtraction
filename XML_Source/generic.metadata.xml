@@ -12,5 +12,6 @@
 	<entry key='acn:HCOCaseType'>case_type</entry>
 	<entry key='acn:HCOCaseNumber'>case_number</entry>
 	<entry key='acn:HCOCaseDate'>case_date</entry>
-	<entry key='acn:HCOVersion'>version_no</entry>
+	<entry key='acn:HCOCaseRecordNumber'>caseYear_caseNumber_caseType</entry>
+	<entry key='acn:HCOCaseYear'>case_year</entry>
 </properties>
