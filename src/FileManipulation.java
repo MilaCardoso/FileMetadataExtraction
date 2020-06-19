@@ -151,7 +151,7 @@ public class FileManipulation {
 	}
 
 	public void updateXML(String main_path, String filename, String createdDate, String caseYear) throws Exception {
-		//generate a copy and keep the XML tamplate
+		//generate a copy and keep the XML template
 	       
         Document doc = this.docBuilder.newDocument();
         Node copiedRoot = doc.importNode(originalRoot, true);
@@ -235,14 +235,9 @@ public class FileManipulation {
 		    transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
 			
 			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(path + "\\" + caseYear + "_" + filename + ".metadata.properties.xml"));
+			StreamResult result = new StreamResult(new File(path + "\\" + filename + ".metadata.properties.xml"));
 			//System.out.println("Generating:" + filename + ".metadata.properties.xml");
 			transformer.transform(source, result);
-			
-			
-			Path origin = Paths.get(path + "/" + filename);
-			Path newFileName = Paths.get(path + "/" + caseYear + "_" + filename);
-			Files.move(origin, newFileName, StandardCopyOption.REPLACE_EXISTING);
 			
 			//System.out.println("Done...");
 			this.count ++; //little number counter that says how many files are generated
