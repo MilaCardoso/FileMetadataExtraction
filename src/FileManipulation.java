@@ -72,7 +72,7 @@ public class FileManipulation {
 			 * LEAVE HOW IT IS
 			 */
 			
-			readXML("XML_Source\\generic.metadata.xml");
+			readXML();
 			// path to the .doc, .docx, .pdf files
 			this.folder = new File(path);
 			
@@ -248,11 +248,13 @@ public class FileManipulation {
 		//this.count ++; //little number counter that says how many files are generated
 	}
 
-	public void readXML(String path) throws ParserConfigurationException, SAXException, IOException {
+	public void readXML() throws ParserConfigurationException, SAXException, IOException {
 		// reading xml file - generic script
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		docFactory.setValidating(false);
+		docFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		this.docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(path);
+		Document doc = docBuilder.parse(FileManipulation.class.getResourceAsStream("generic.metadata.xml"));
         this.originalRoot = doc.getDocumentElement();
 	}
 
