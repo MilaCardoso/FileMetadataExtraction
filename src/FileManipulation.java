@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -45,7 +46,7 @@ public class FileManipulation {
 	Node originalRoot;
 	File folder;
 	String[] values;
-	String[] allowed_fileTypes =  {".doc",".docx",".pdf"};
+	String[] allowed_fileTypes =  {".doc",".docx",".pdf",".DOC",".DOCX",".PDF"};
 	String[] special_fileTypes = {".xml", ".log"};
 	int count = 0; //count how many files generated
 	int count_correct = 0; //count how many files are correct format
@@ -56,7 +57,7 @@ public class FileManipulation {
 	List <String> notReadFolders = new ArrayList<String>();
 	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	Transformer transformer;
-	Map<String, String> caseTypeList = new HashMap<>();
+	Map<String, String> caseTypeList = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	File incorrectFilesFolder; 
 	 
 	public FileManipulation(String path) {
@@ -192,7 +193,20 @@ public class FileManipulation {
 				node_.setTextContent(caseYear);
 			}
 		}
-		writeXML(main_path, filename, doc, caseYear);
+		String newFileName = renameOriginalFile(main_path, filename, values[0]);
+		writeXML(main_path, newFileName, doc);
+	}
+	
+	public static String renameOriginalFile(String mainPath, String originalFilename, String caseType) throws IOException {
+		String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+		
+		String newFileName = caseType + originalFilename.substring(originalFilename.indexOf("_"));
+		newFileName = newFileName.substring(0, newFileName.lastIndexOf('.')) + fileExtension.toLowerCase();
+		File origin = new File(mainPath + "/" + originalFilename);
+		File newFile = new File(mainPath + "/" + newFileName);
+		origin.renameTo(newFile);
+		
+		return newFileName;
 	}
 	
 	public static boolean isNumeric(String str) { 
@@ -217,11 +231,11 @@ public class FileManipulation {
 	  return entryContent;
 	}
 
-	public void writeXML(String path, String filename, Document doc, String caseYear) {
+	public void writeXML(String path, String filename, Document doc) {
 		// write the content into xml file
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		
-		try {
+		try {			
 			transformer = transformerFactory.newTransformer();
 			
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -391,7 +405,7 @@ public class FileManipulation {
 				if (i == 0) {
 					// compare caseType field with the caseTypeList
 					if (caseTypeList.containsKey(part[i])) {
-						values[i] = part[i];
+						values[i] = getKeyValue(part[i]);
 					} else {
 						state = false;
 					}
@@ -420,6 +434,15 @@ public class FileManipulation {
 		return state;
 	}
 
+	private String getKeyValue(String currentValue) {
+		for (String key : caseTypeList.keySet()) {
+			if (key.toUpperCase().equals(currentValue.toUpperCase())) {
+				return key;
+			}
+		}
+        return ""; 
+	}
+	
 	public FilenameFilter createFilter(List <String> wrongFileTypes) {
 		/*
 		 * this creates filter which then filters according to the allowed file types
