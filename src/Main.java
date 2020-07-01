@@ -11,7 +11,7 @@ public class Main {
 			 */
 			if(args.length == 1) {			
 				System.out.println(args[0]);
-				String main_path = args[0];//"C:\\Users\\antonela.mrkalj\\git\\FileMetadataExtraction\\TEST";
+				String main_path = args[0];
 				FileManipulation filegenerate = new FileManipulation(main_path);
 				filegenerate.startMetadataExtraction();
 			}
