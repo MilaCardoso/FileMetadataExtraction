@@ -46,7 +46,7 @@ public class FileManipulation {
 	Node originalRoot;
 	File folder;
 	String[] values;
-	String[] allowed_fileTypes =  {".doc",".docx",".pdf",".DOC",".DOCX",".PDF"};
+	String[] allowed_fileTypes =  {".doc",".docx",".pdf"};
 	String[] special_fileTypes = {".xml", ".log"};
 	int count = 0; //count how many files generated
 	int count_correct = 0; //count how many files are correct format
@@ -463,7 +463,7 @@ public class FileManipulation {
 				String str = name.substring(lastIndex);
 				// match path name extension
 				for(String attachment: allowed_fileTypes) {//if file .doc, .docx, .pdf allow it
-					if (str.equals(attachment))
+					if (attachment.equals(str.toLowerCase()))
 						return true;
 				}	
 				for(String attachment: special_fileTypes) {//if file is .log or .xml please ignore
