@@ -59,6 +59,8 @@ public class FileManipulation {
 	Transformer transformer;
 	Map<String, String> caseTypeList = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	File incorrectFilesFolder; 
+	String yearFile;
+	String monthFile;
 	 
 	public FileManipulation(String path) {
 		/*
@@ -197,13 +199,13 @@ public class FileManipulation {
 		writeXML(main_path, newFileName, doc);
 	}
 	
-	public static String renameOriginalFile(String mainPath, String originalFilename, String caseType) throws IOException {
+	public String renameOriginalFile(String mainPath, String originalFilename, String caseType) throws IOException {
 		String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-		
+		String newMainPath = (mainPath + "\\" + yearFile + "\\" + monthFile);
 		String newFileName = caseType + originalFilename.substring(originalFilename.indexOf("_"));
 		newFileName = newFileName.substring(0, newFileName.lastIndexOf('.')) + fileExtension.toLowerCase();
 		File origin = new File(mainPath + "/" + originalFilename);
-		File newFile = new File(mainPath + "/" + newFileName);
+		File newFile = new File(newMainPath + "/" + newFileName);
 		origin.renameTo(newFile);
 		
 		return newFileName;
@@ -249,7 +251,7 @@ public class FileManipulation {
 		    transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
 			
 			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(path + "\\" + filename + ".metadata.properties.xml"));
+			StreamResult result = new StreamResult(new File(path + "\\" + yearFile + "\\" + monthFile + "\\" + filename + ".metadata.properties.xml"));
 			//System.out.println("Generating:" + filename + ".metadata.properties.xml");
 			transformer.transform(source, result);
 			
@@ -310,6 +312,8 @@ public class FileManipulation {
 					if (!temp.exists()) { 
 						//code won't verify file name if corresponding .xml is generated -- stops overwritting
 						if (VerifyFileName(file_.getName())) {
+							// if name is correctly create year and month folders
+							new File(folder.getPath() + "/" + yearFile + "/" + monthFile).mkdirs();
 							// if name is correctly formated, generate .xml
 							BasicFileAttributes attr = Files.readAttributes(file_.toPath(), BasicFileAttributes.class);
 							String dateCreated = dateFormat.format(attr.creationTime().toMillis());
@@ -417,7 +421,8 @@ public class FileManipulation {
 						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
 						date = LocalDate.parse(part[i], formatter);
 						values[i] = date.toString();
-						
+						yearFile = date.toString().substring(0,4);
+						monthFile = date.toString().substring(5,7);
 					} catch (DateTimeParseException e) {
 						//if not a date return false
 						state = false;
