@@ -60,7 +60,7 @@ public class FileManipulation {
 	Map<String, String> caseTypeList = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	File incorrectFilesFolder; 
 	String yearFile;
-	String monthFile;
+	int monthFile;
 	 
 	public FileManipulation(String path) {
 		/*
@@ -418,11 +418,16 @@ public class FileManipulation {
 					part[i] = part[i].substring(0, 6);
 					// check date format only
 					try {
-						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
+						if (Integer.parseInt(part[i].substring(0,2)) >= 00 && Integer.parseInt(part[i].substring(0,2)) <= 21 ) {
+							part[i] = 20 + part[i];
+						} else {
+							part[i] = 19 + part[i];
+						}
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 						date = LocalDate.parse(part[i], formatter);
 						values[i] = date.toString();
 						yearFile = date.toString().substring(0,4);
-						monthFile = date.toString().substring(5,7);
+						monthFile = Integer.parseInt(date.toString().substring(5,7));
 					} catch (DateTimeParseException e) {
 						//if not a date return false
 						state = false;
