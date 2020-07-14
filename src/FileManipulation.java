@@ -61,6 +61,8 @@ public class FileManipulation {
 	File incorrectFilesFolder; 
 	String yearFile;
 	int monthFile;
+	String caseTypeFolder;
+	String caseNumberFolder;
 	 
 	public FileManipulation(String path) {
 		/*
@@ -178,7 +180,7 @@ public class FileManipulation {
 			if ("acn:HCOCaseNumber".equals(nodeAttr.getTextContent())) {
 				node_.setTextContent(values[1]);
 			}
-			if ("acn:HCOCaseDate".equals(nodeAttr.getTextContent())) {
+			if ("acn:HCOOrderDate".equals(nodeAttr.getTextContent())) {
 				node_.setTextContent(values[2]);
 			}	
 			if ("acn:HCOVersion".equals(nodeAttr.getTextContent())) {
@@ -201,7 +203,7 @@ public class FileManipulation {
 	
 	public String renameOriginalFile(String mainPath, String originalFilename, String caseType) throws IOException {
 		String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-		String newMainPath = (mainPath + "\\" + yearFile + "\\" + monthFile);
+		String newMainPath = (mainPath + "\\" + caseTypeFolder + "\\" + yearFile + "\\" + monthFile + "\\" + caseNumberFolder);
 		String newFileName = caseType + originalFilename.substring(originalFilename.indexOf("_"));
 		newFileName = newFileName.substring(0, newFileName.lastIndexOf('.')) + fileExtension.toLowerCase();
 		File origin = new File(mainPath + "/" + originalFilename);
@@ -251,7 +253,7 @@ public class FileManipulation {
 		    transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
 			
 			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(path + "\\" + yearFile + "\\" + monthFile + "\\" + filename + ".metadata.properties.xml"));
+			StreamResult result = new StreamResult(new File(path + "\\" + caseTypeFolder + "\\" + yearFile + "\\" + monthFile + "\\" + caseNumberFolder + "\\" + filename + ".metadata.properties.xml"));
 			//System.out.println("Generating:" + filename + ".metadata.properties.xml");
 			transformer.transform(source, result);
 			
@@ -313,7 +315,7 @@ public class FileManipulation {
 						//code won't verify file name if corresponding .xml is generated -- stops overwritting
 						if (VerifyFileName(file_.getName())) {
 							// if name is correctly create year and month folders
-							new File(folder.getPath() + "/" + yearFile + "/" + monthFile).mkdirs();
+							new File(folder.getPath() + "/" + caseTypeFolder + "/" + yearFile + "/" + monthFile + "/" + caseNumberFolder).mkdirs();
 							// if name is correctly formated, generate .xml
 							BasicFileAttributes attr = Files.readAttributes(file_.toPath(), BasicFileAttributes.class);
 							String dateCreated = dateFormat.format(attr.creationTime().toMillis());
@@ -410,10 +412,13 @@ public class FileManipulation {
 					// compare caseType field with the caseTypeList
 					if (caseTypeList.containsKey(part[i])) {
 						values[i] = getKeyValue(part[i]);
+						caseTypeFolder = values[i];
 					} else {
 						state = false;
 					}
-						
+				} else if (i == 1) {	
+					caseNumberFolder = part[i];
+					values[i] = part[i];
 				} else if (i == 2) {
 					part[i] = part[i].substring(0, 6);
 					// check date format only
@@ -438,7 +443,7 @@ public class FileManipulation {
 					 * this variable is used in XML file update
 					 */
 					
-					values[i] = part[i];					
+					values[i] = part[i];	
 			}
 		}
 		return state;
