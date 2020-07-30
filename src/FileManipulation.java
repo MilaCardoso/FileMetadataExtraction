@@ -8,6 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileOwnerAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -39,6 +43,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.aspose.words.LoadFormat;
+import com.aspose.words.LoadOptions;
 
 public class FileManipulation {
 	String path;
@@ -155,7 +162,7 @@ public class FileManipulation {
 		}
 	}
 
-	public void updateXML(String main_path, String filename, String createdDate, String caseYear) throws Exception {
+	public void updateXML(String main_path, String filename, String createdDate, String caseYear, String author, String lastSavedBy) throws Exception {
 		//generate a copy and keep the XML template
 	       
         Document doc = this.docBuilder.newDocument();
@@ -173,6 +180,12 @@ public class FileManipulation {
 			Node nodeAttr = attr.getNamedItem("key");
 			if("cm:created".equals(nodeAttr.getTextContent())) {
 				node_.setTextContent(createdDate);
+			}
+			if("cm:author".equals(nodeAttr.getTextContent())) {
+				node_.setTextContent(author);
+			}
+			if("cm:owner".equals(nodeAttr.getTextContent())) {
+				node_.setTextContent(lastSavedBy);
 			}
 			if ("acn:HCOCaseType".equals(nodeAttr.getTextContent())) {
 				node_.setTextContent(values[0]);
@@ -317,10 +330,28 @@ public class FileManipulation {
 							// if name is correctly create year and month folders
 							new File(folder.getPath() + "/" + caseTypeFolder + "/" + yearFile + "/" + monthFile + "/" + caseNumberFolder).mkdirs();
 							// if name is correctly formated, generate .xml
+							// created date from properties file
 							BasicFileAttributes attr = Files.readAttributes(file_.toPath(), BasicFileAttributes.class);
 							String dateCreated = dateFormat.format(attr.creationTime().toMillis());
 							
-							updateXML(folder.getPath(), file_.getName(), dateCreated, caseYear);
+							String author;
+							String lastSavedBy;
+							// get last index for '.' char
+							int lastIndex = file_.getName().lastIndexOf('.');
+							// get extension
+							String extension = file_.getName().substring(lastIndex);
+							
+							if (extension.equalsIgnoreCase(".doc") || extension.equalsIgnoreCase(".docx")) { 
+								// author and last saved by from properties doc or docx file
+								com.aspose.words.Document doc = new com.aspose.words.Document(file_.getAbsolutePath());
+								author = doc.getBuiltInDocumentProperties().getAuthor();
+								lastSavedBy = doc.getBuiltInDocumentProperties().getLastSavedBy();
+							} else {
+								FileOwnerAttributeView pdfOwner = Files.getFileAttributeView(file_.toPath(), FileOwnerAttributeView.class);
+								author = "author";
+								lastSavedBy = pdfOwner.getOwner().toString();
+							}
+							updateXML(folder.getPath(), file_.getName(), dateCreated, caseYear, author, lastSavedBy);
 							this.count_correct++;
 						} else {
 							this.count_incorrect++;
